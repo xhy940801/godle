@@ -78,6 +78,21 @@ class Controller
 		return $_GET;
 	}
 
+	protected function redirect($url, $parmas = array())
+	{
+		$realUrl;
+		if(is_string($url))
+			$realUrl = $url;
+		else
+		{
+			$realUrl = __HOST_URL__ . '/' . $url['controller'] . '/' . $url['action'];
+			foreach ($parmas as $value)
+				$realUrl .= ('/' . $value);
+		}
+		header('Location: ' . $realUrl);
+		exit();
+	}
+
 	protected function _beforeAction()
 	{
 
