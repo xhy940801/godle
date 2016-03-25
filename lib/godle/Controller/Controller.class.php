@@ -60,10 +60,15 @@ class Controller
 		return $_SERVER['REQUEST_METHOD'] === 'POST';
 	}
 
-	protected function getPost($name = null)
+	protected function post($name = null, $default = null)
 	{
 		if(isset($name))
-			return $_POST[$name];
+        {
+            if(isset($_POST[$name]))
+			    return $_POST[$name];
+            else
+                return $default;
+        }
 		return $_POST;
 	}
 
@@ -72,12 +77,22 @@ class Controller
 		return $_SERVER['REQUEST_METHOD'] === 'GET';
 	}
 
-	protected function getGet($name = null)
+	protected function get($name = null, $default = null)
 	{
 		if(isset($name))
-			return $_GET[$name];
+        {
+            if(isset($_GET[$name]))
+			    return $_GET[$name];
+            else
+                return $default;
+        }
 		return $_GET;
 	}
+
+    protected function method()
+    {
+        return $_SERVER['REQUEST_METHOD'];
+    }
 
 	protected function redirect($url, $parmas = array())
 	{

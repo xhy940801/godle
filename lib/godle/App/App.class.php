@@ -25,6 +25,16 @@ class App
 		return require(__ROOT__ . DIRECTORY_SEPARATOR . __APP_DIR__ . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'conf.php');
 	}
 
+    static public function getDataPath($type, $classname, $name)
+    {
+        return __ROOT__ . DIRECTORY_SEPARATOR . __DATA_DIR__ . DIRECTORY_SEPARATOR . $type . '.' . $classname . '.' . $name;
+    }
+
+    static public function getCachePath($type, $classname, $name)
+    {
+        return __ROOT__ . DIRECTORY_SEPARATOR . __CACHE_DIR__ . DIRECTORY_SEPARATOR . $type . '.' . $classname . '.' . $name;
+    }
+
 	static public function dispacher($url, $conf)
 	{
 		$urlArr = explode('/', $url);
