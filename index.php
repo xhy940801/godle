@@ -16,8 +16,10 @@ unset($url);
 
 require(__ROOT__ . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'godle' . DIRECTORY_SEPARATOR . 'App' . DIRECTORY_SEPARATOR . 'App.class.php');
 
+App::import('CoreException', 'App', 'lib' . DIRECTORY_SEPARATOR . 'godle');
 App::import('common', './', 'lib' . DIRECTORY_SEPARATOR . 'godle', '.php');
 App::import('Controller', 'Controller', 'lib' . DIRECTORY_SEPARATOR . 'godle');
 
 $conf = App::getConf();
+
 App::dispacher(substr($_SERVER['DOCUMENT_ROOT'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), strlen(__ROOT__)), $conf);

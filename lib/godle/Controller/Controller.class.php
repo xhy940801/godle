@@ -6,7 +6,7 @@ class Controller
 
 	protected $_helpers = array();
 	protected $_plugins = array();
-	protected $layout;
+	protected $_layout;
 
 	protected $_config = array();
 
@@ -23,7 +23,7 @@ class Controller
 			);
 		$this->_viewName = $action;
 		$this->_config = $config;
-		$this->layout = $config['defaultLayout'];
+		$this->_layout = $config['defaultLayout'];
 
 		$this->initPlugins($this->_plugins);
 	}
@@ -31,14 +31,18 @@ class Controller
 	public function _doAction($actionParams)
 	{
 		$this->_beforeAction();
+		if (!is_callable(array($this, $this->param['action'])))
+			throw new MethodNotFoundException($this->param['controller'] . 'Controller', $this->param['action']);
 		call_user_func_array(array($this, $this->param['action']), $actionParams);
 		$this->_afterAction();
 		$this->_render();
 	}
 
-	protected function render($ctpname)
+	protected function render($ctpname, $layout = NULL)
 	{
 		$this->_viewName = $ctpname;
+		if ($layout)
+			$this->_layout = $layout;
 	}
 
 	protected function initPlugins($plugins)
@@ -86,6 +90,11 @@ class Controller
 		return $_REQUEST;
 	}
 
+	protected function config($key)
+	{
+		return $this->_config[$key];
+	}
+
 	protected function redirect($url, $parmas = array())
 	{
 		$realUrl;
@@ -117,7 +126,6 @@ class Controller
 
 	protected function _afterRender()
 	{
-
 	}
 
 	protected function _finalize()
@@ -130,7 +138,7 @@ class Controller
 		$this->_beforeRender();
 
 		App::import('View', 'View', 'lib' . DIRECTORY_SEPARATOR . 'godle');
-		$view = new View($this->_helpers, $this->_viewFields, $this->layout, $this->_viewName, $this->param['controller']);
+		$view = new View($this->_helpers, $this->_viewFields, $this->_layout, $this->_viewName, $this->param['controller']);
 		$view->render();
 
 		$this->_afterRender();

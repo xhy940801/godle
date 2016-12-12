@@ -22,18 +22,49 @@ class App
 
 	static public function getConf()
 	{
-		return require(__ROOT__ . DIRECTORY_SEPARATOR . __APP_DIR__ . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'conf.php');
+		$config = require(__ROOT__ . DIRECTORY_SEPARATOR . __APP_DIR__ . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'conf.php');
+		if (empty($config))
+			$config = array();
+		$defaultConfig = require(__ROOT__ . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'godle' . DIRECTORY_SEPARATOR . 'conf.php');
+		return array_merge($defaultConfig, $config);
 	}
 
-    static public function getDataPath($type, $classname, $name)
-    {
-        return __ROOT__ . DIRECTORY_SEPARATOR . __DATA_DIR__ . DIRECTORY_SEPARATOR . $type . '.' . $classname . '.' . $name;
-    }
+	static public function getDataPath($type, $classname, $name)
+	{
+		return __ROOT__ . DIRECTORY_SEPARATOR . __DATA_DIR__ . DIRECTORY_SEPARATOR . $type . '.' . $classname . '.' . $name;
+	}
 
-    static public function getCachePath($type, $classname, $name)
-    {
-        return __ROOT__ . DIRECTORY_SEPARATOR . __CACHE_DIR__ . DIRECTORY_SEPARATOR . $type . '.' . $classname . '.' . $name;
-    }
+	static public function getCachePath($type, $classname, $name)
+	{
+		return __ROOT__ . DIRECTORY_SEPARATOR . __CACHE_DIR__ . DIRECTORY_SEPARATOR . $type . '.' . $classname . '.' . $name;
+	}
+
+	static public function dispacheError($e, $dispacherArr, $conf)
+	{
+		$pageControllerName = $conf['defaultController'] . 'Controller';
+		$pageController = new $pageControllerName;
+		switch($e->getCode())
+		{
+		case 404:
+			$pageController->_initController($conf['defaultController'], 'pageNotFound', $conf);
+			$pageController->_doAction(array($e));
+			break;
+		default:
+			$pageController->_initController($conf['defaultController'], 'systemError', $conf);
+			$pageController->_doAction(array($e));
+			break;
+		}
+	}
+
+	static public function execute($dispacherArr, $conf)
+	{
+		$controllerName = $dispacherArr['controller'] . 'Controller';
+		if (!class_exists($controllerName))
+			throw new ClassNotFoundException($controllerName);
+		$controller = new $controllerName();
+		$controller->_initController($dispacherArr['controller'], $dispacherArr['action'], $conf);
+		$controller->_doAction(array_slice($urlArr, 3));
+	}
 
 	static public function dispacher($url, $conf)
 	{
@@ -46,9 +77,13 @@ class App
 		if(!empty($urlArr[2]))
 			$dispacherArr['action'] = $urlArr[2];
 
-		$controllerName = $dispacherArr['controller'] . 'Controller';
-		$controller = new $controllerName();
-		$controller->_initController($dispacherArr['controller'], $dispacherArr['action'], $conf);
-		$controller->_doAction(array_slice($urlArr, 3));
+		try
+		{
+			App::execute($dispacherArr, $conf);
+		}
+		catch (CoreException $e)
+		{
+			App::dispacheError($e, $dispacherArr, $conf);
+		}
 	}
 }
