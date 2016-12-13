@@ -39,7 +39,7 @@ class App
         return __ROOT__ . DIRECTORY_SEPARATOR . __CACHE_DIR__ . DIRECTORY_SEPARATOR . $type . '.' . $classname . '.' . $name;
     }
 
-    static public function dispacheError($e, $dispacherArr, $conf)
+    static public function dispacheError($e, $conf)
     {
         $pageControllerName = $conf['defaultController'] . 'Controller';
         $pageController = new $pageControllerName;
@@ -56,14 +56,22 @@ class App
         }
     }
 
-    static public function execute($dispacherArr, $conf)
+    static public function dispacheUnknowError($e, $conf)
+    {
+        $pageControllerName = $conf['defaultController'] . 'Controller';
+        $pageController = new $pageControllerName;
+        $pageController->_initController($conf['defaultController'], 'unknowError', $conf);
+        $pageController->_doAction(array($e));
+    }
+
+    static public function execute($dispacherArr, $params, $conf)
     {
         $controllerName = $dispacherArr['controller'] . 'Controller';
         if (!class_exists($controllerName))
             throw new ClassNotFoundException($controllerName);
         $controller = new $controllerName();
         $controller->_initController($dispacherArr['controller'], $dispacherArr['action'], $conf);
-        $controller->_doAction(array_slice($urlArr, 3));
+        $controller->_doAction($params);
     }
 
     static public function dispacher($url, $conf)
@@ -79,11 +87,15 @@ class App
 
         try
         {
-            App::execute($dispacherArr, $conf);
+            App::execute($dispacherArr, array_slice($urlArr, 3), $conf);
         }
         catch (CoreException $e)
         {
-            App::dispacheError($e, $dispacherArr, $conf);
+            App::dispacheError($e, $conf);
+        }
+        catch (Exception $e)
+        {
+            App::dispacheUnknowError($e, $conf);
         }
     }
 }
